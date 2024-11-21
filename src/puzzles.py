@@ -29,31 +29,7 @@ import pandas as pd
 from searchless_chess.src.engines import constants
 from searchless_chess.src.engines import engine as engine_lib
 
-
-_NUM_PUZZLES = flags.DEFINE_integer(
-    name='num_puzzles',
-    default=None,
-    help='The number of puzzles to evaluate.',
-    required=True,
-)
-_AGENT = flags.DEFINE_enum(
-    name='agent',
-    default=None,
-    enum_values=[
-        'local',
-        '9M',
-        '136M',
-        '270M',
-        'stockfish',
-        'stockfish_all_moves',
-        'leela_chess_zero_depth_1',
-        'leela_chess_zero_policy_net',
-        'leela_chess_zero_400_sims',
-    ],
-    help='The agent to evaluate.',
-    required=True,
-)
-
+FLAGS = flags.FLAGS
 
 def evaluate_puzzle_from_pandas_row(
     puzzle: pd.Series,
@@ -116,4 +92,28 @@ def main(argv: Sequence[str]) -> None:
 
 
 if __name__ == '__main__':
-  app.run(main)
+    FLAGS.unparse_flags()
+    _NUM_PUZZLES = flags.DEFINE_integer(
+        name='num_puzzles',
+        default=None,
+        help='The number of puzzles to evaluate.',
+        required=True,
+    )
+    _AGENT = flags.DEFINE_enum(
+        name='agent',
+        default=None,
+        enum_values=[
+            'local',
+            '9M',
+            '136M',
+            '270M',
+            'stockfish',
+            'stockfish_all_moves',
+            'leela_chess_zero_depth_1',
+            'leela_chess_zero_policy_net',
+            'leela_chess_zero_400_sims',
+        ],
+        help='The agent to evaluate.',
+        required=True,
+    )
+    app.run(main)
