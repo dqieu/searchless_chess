@@ -175,6 +175,7 @@ class BagReader(Sequence[bytes]):
       decompress: Whether to decompress the records. If None, uses the file
         extension to determine whether to decompress.
     """
+    self._filename = filename
     if matches := re.findall(r'@(\d+)', filename):
       assert len(matches) == 1
       if int(matches[0]) != '0':

@@ -21,7 +21,7 @@ import dataclasses
 from typing import Any, NamedTuple, Protocol
 
 from apache_beam import coders
-from grain import python as pygrain
+from searchless_chess.src import dataloader2 as pygrain
 import haiku as hk
 import jaxtyping as jtp
 

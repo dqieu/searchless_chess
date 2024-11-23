@@ -20,7 +20,7 @@ import pathlib
 from typing import Any
 
 import chex
-from grain import python as pygrain
+from searchless_chess.src import dataloader2 as pygrain
 import haiku as hk
 import jax
 from jax import numpy as jnp
