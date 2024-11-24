@@ -22,11 +22,11 @@ import grain.python as pygrain
 import jax
 import numpy as np
 
-from searchless_chess.src import bagz
-from searchless_chess.src import config as config_lib
-from searchless_chess.src import constants
-from searchless_chess.src import tokenizer
-from searchless_chess.src import utils
+from src import bagz
+from src import config as config_lib
+from src import constants
+from src import tokenizer
+from src import utils
 
 
 def _process_fen(fen: str) -> np.ndarray:

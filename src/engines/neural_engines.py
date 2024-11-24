@@ -24,10 +24,10 @@ import jax.nn as jnn
 import numpy as np
 import scipy.special
 
-from searchless_chess.src import constants
-from searchless_chess.src import tokenizer
-from searchless_chess.src import utils
-from searchless_chess.src.engines import engine
+from src import constants
+from src import tokenizer
+from src import utils
+from src.engines import engine
 
 # Input = tokenized FEN, Output = log-probs, depends on the agent.
 PredictFn = Callable[[np.ndarray], np.ndarray]

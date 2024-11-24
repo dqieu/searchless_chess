@@ -27,10 +27,10 @@ import jax.random as jrandom
 import numpy as np
 import optax
 
-from searchless_chess.src import config as config_lib
-from searchless_chess.src import constants
-from searchless_chess.src import training_utils
-from searchless_chess.src import transformer
+from src import config as config_lib
+from src import constants
+from src import training_utils
+from src import transformer
 
 
 def train(

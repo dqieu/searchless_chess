@@ -21,11 +21,11 @@ import dataclasses
 from typing import Any, NamedTuple, Protocol
 
 from apache_beam import coders
-from searchless_chess.src import dataloader2 as pygrain
+from src import dataloader2 as pygrain
 import haiku as hk
 import jaxtyping as jtp
 
-from searchless_chess.src import config as config_lib
+from src import config as config_lib
 
 
 # Integer sequences of token ids.

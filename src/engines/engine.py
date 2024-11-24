@@ -20,7 +20,7 @@ from typing import Any, Protocol
 
 import chess
 
-from searchless_chess.src import utils
+from src import utils
 
 AnalysisResult = Mapping[str, Any]
 

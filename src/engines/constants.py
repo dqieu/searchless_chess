@@ -24,13 +24,13 @@ import chess.pgn
 from jax import random as jrandom
 import numpy as np
 
-from searchless_chess.src import tokenizer
-from searchless_chess.src import training_utils
-from searchless_chess.src import transformer
-from searchless_chess.src import utils
-from searchless_chess.src.engines import lc0_engine
-from searchless_chess.src.engines import neural_engines
-from searchless_chess.src.engines import stockfish_engine
+from src import tokenizer
+from src import training_utils
+from src import transformer
+from src import utils
+from src.engines import lc0_engine
+from src.engines import neural_engines
+from src.engines import stockfish_engine
 
 
 def _build_neural_engine(

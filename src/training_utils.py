@@ -20,14 +20,14 @@ import pathlib
 from typing import Any
 
 import chex
-from searchless_chess.src import dataloader2 as pygrain
+from src import dataloader2 as pygrain
 import haiku as hk
 import jax
 from jax import numpy as jnp
 import optax
 import orbax.checkpoint as ocp
 
-from searchless_chess.src import constants
+from src import constants
 
 
 def replicate(

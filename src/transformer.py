@@ -25,7 +25,7 @@ import jax.nn as jnn
 import jax.numpy as jnp
 import numpy as np
 
-from searchless_chess.src import constants
+from src import constants
 
 
 class PositionalEncodings(enum.Enum):

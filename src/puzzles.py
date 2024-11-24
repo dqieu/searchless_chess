@@ -26,8 +26,8 @@ import chess.engine
 import chess.pgn
 import pandas as pd
 
-from searchless_chess.src.engines import constants
-from searchless_chess.src.engines import engine as engine_lib
+from src.engines import constants
+from engines import engine as engine_lib
 
 FLAGS = flags.FLAGS
 

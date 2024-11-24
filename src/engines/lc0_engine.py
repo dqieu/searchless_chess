@@ -19,7 +19,7 @@ import os
 
 import chess.engine
 
-from searchless_chess.src.engines import engine
+from src.engines import engine
 
 
 class Lc0Engine(engine.Engine):

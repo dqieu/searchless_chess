@@ -9,13 +9,9 @@ except ImportError as e:
 import numpy as np
 from jax import random as jrandom
 import orbax.checkpoint as ocp
-
-from searchless_chess.src import tokenizer
-from searchless_chess.src import transformer
-from searchless_chess.src import utils
-from searchless_chess.src import training_utils
-from searchless_chess.src.engines import neural_engines
-from searchless_chess.src.engines import engine
+from src import transformer
+from src import tokenizer, utils, training_utils
+from src.engines import engine, neural_engines
 
 
 def create_predictor(model_size="270M", policy='action_value'):
@@ -116,6 +112,7 @@ def load_model(model_size="270M", policy='action_value'):
             print("Subdirectories:", dirs)
         print(f"\nUsing dummy parameters for testing purposes")
         return predictor, dummy_params
+
 
 def evaluate_positions(fen_list, model_size="270M", policy='action_value',
                        batch_size=32):

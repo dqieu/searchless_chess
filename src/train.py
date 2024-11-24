@@ -20,13 +20,13 @@ from collections.abc import Sequence
 from absl import app
 from absl import flags
 
-from searchless_chess.src import config as config_lib
-from searchless_chess.src import data_loader
-from searchless_chess.src import metrics_evaluator
-from searchless_chess.src import tokenizer
-from searchless_chess.src import training
-from searchless_chess.src import transformer
-from searchless_chess.src import utils
+from src import config as config_lib
+from src import data_loader
+from src import metrics_evaluator
+from src import tokenizer
+from src import training
+from src import transformer
+from src import utils
 
 
 _POLICY = flags.DEFINE_enum(
