@@ -12,7 +12,8 @@ import orbax.checkpoint as ocp
 from src import transformer
 from src import tokenizer, utils, training_utils
 from src.engines import engine, neural_engines
-
+import time
+import csv
 
 def create_predictor(model_size="270M", policy='action_value'):
     """Creates the transformer predictor with specified parameters based on model size."""
@@ -114,11 +115,13 @@ def load_model(model_size="270M", policy='action_value'):
         return predictor, dummy_params
 
 
-def evaluate_positions(fen_list, model_size="270M", policy='action_value',
+def evaluate_positions(fen_list, model_size="270M",
+                       time_limit=5,
                        batch_size=32):
     """
     Evaluates chess positions using specified model size and policy.
     """
+    policy = 'state_value'
     predictor, params = load_model(model_size, policy)
 
     # Create appropriate engine based on policy
@@ -128,63 +131,25 @@ def evaluate_positions(fen_list, model_size="270M", policy='action_value',
         params=params,
         batch_size=batch_size
     )
-
-    if policy == 'action_value':
-        engine_instance = neural_engines.ActionValueEngine(
-            return_buckets_values=return_buckets_values,
-            predict_fn=predict_fn
-        )
-    elif policy == 'state_value':
-        engine_instance = neural_engines.StateValueEngine(
-            return_buckets_values=return_buckets_values,
-            predict_fn=predict_fn
-        )
-    else:  # behavioral_cloning
-        engine_instance = neural_engines.BCEngine(predict_fn=predict_fn)
+    engine_instance = neural_engines.StateValueEngine(
+        return_buckets_values=return_buckets_values,
+        predict_fn=predict_fn
+    )
 
     results = {}
     for fen in fen_list:
         try:
             board = chess.Board(fen)
-            analysis = engine_instance.analyse(board)
-
-            if policy == 'action_value':
-                buckets_log_probs = analysis['log_probs']
-                buckets_probs = np.exp(buckets_log_probs)
-                win_probs = np.inner(buckets_probs, return_buckets_values)
-
-                sorted_legal_moves = engine.get_ordered_legal_moves(board)
-
-                move_probs = [(move.uci(), prob) for move, prob in
-                              zip(sorted_legal_moves, win_probs)]
-                move_probs.sort(key=lambda x: x[1], reverse=True)
-
-                results[fen] = {
-                    'win_probability': float(move_probs[0][1]),
-                    'best_move': move_probs[0][0],
-                    'all_moves': move_probs
-                }
-
-            elif policy == 'state_value':
-                current_log_probs = analysis['current_log_probs']
-                current_probs = np.exp(current_log_probs)
-                win_prob = np.inner(current_probs, return_buckets_values)
-
-                results[fen] = float(win_prob)
-
-            else:  # behavioral_cloning
-                action_log_probs = analysis['log_probs']
-                action_probs = np.exp(action_log_probs)
-
-                sorted_legal_moves = engine.get_ordered_legal_moves(board)
-                move_probs = [(move.uci(), prob) for move, prob in
-                              zip(sorted_legal_moves, action_probs)]
-                move_probs.sort(key=lambda x: x[1], reverse=True)
-
-                results[fen] = {
-                    'best_move': move_probs[0][0],
-                    'move_probabilities': move_probs
-                }
+            analysis_list = []
+            t0 = time.time()
+            while True:
+                analysis_list.append(engine_instance.analyse(board)['current_log_probs'])
+                if time.time() - t0 > time_limit:
+                    break
+            log_probs = np.array(analysis_list)
+            current_probs = np.exp(log_probs)
+            win_probs = np.inner(current_probs, return_buckets_values)
+            results[fen] = [float(np.mean(win_probs)), current_probs.shape[0]]
 
         except Exception as e:
             print(f"Error evaluating position {fen}: {str(e)}")
@@ -285,60 +250,35 @@ def evaluate_with_stockfish(fen_list, time_limit=0.05):
     return results
 
 
-# [Previous code for transformer evaluation remains the same]
+def extract_columns(csv_file):
+    column1 = []  # List to store column 1 (strings)
+    column2 = []  # List to store column 2 (floats)
+
+    with open(csv_file, 'r') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header (if present)
+        for row in reader:
+            if len(row) >= 2:  # Ensure at least two columns
+                column1.append(row[0])  # Add first column as string
+                column2.append(float(row[1]))  # Add second column as float
+    return column1, column2
+
+
+def average_loss(list1, list2):
+    if len(list1) != len(list2):
+        raise ValueError("Lists must be of the same length.")
+
+    total_loss = sum(abs(a - b) for a, b in zip(list1, list2))
+    return total_loss / len(list1)
+
 
 def main():
-    test_positions = [
-        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        # Starting position
-        "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
-        # Common position
-    ]
+    test_path = "/Users/datkieu/PycharmProjects/searchless_chess/data/output.csv"
+    test_positions, target = extract_columns(test_path)
 
-    # First try with dummy parameters to ensure rest of pipeline works
-    try:
-        print("\nEvaluating with Transformer (270M model):")
-        transformer_results = evaluate_positions(test_positions,
-                                                 model_size="270M",
-                                                 policy='action_value')
-
-        print("\nEvaluating with Stockfish (baseline):")
-        stockfish_results = evaluate_with_stockfish(test_positions)
-
-        # Print comparative results
-        for fen in test_positions:
-            print(f"\nPosition: {fen}")
-            print("----------------------------------------")
-
-            # Transformer results
-            t_result = transformer_results.get(fen)
-            if t_result:
-                print("Transformer evaluation:")
-                print(f"Win probability: {t_result['win_probability']:.1%}")
-                print(f"Best move: {t_result['best_move']}")
-                print("Top 3 moves with probabilities:")
-                for move, prob in t_result['all_moves'][:3]:
-                    print(f"{move}: {prob:.1%}")
-            else:
-                print("Transformer evaluation failed")
-
-            print()
-
-            # Stockfish results
-            s_result = stockfish_results.get(fen)
-            if s_result:
-                print("Stockfish evaluation (baseline):")
-                print(f"Win probability: {s_result['win_probability']:.1%}")
-                print(f"Best move: {s_result['best_move']}")
-                print("Top 3 moves with probabilities:")
-                for move, prob in s_result['all_moves'][:3]:
-                    print(f"{move}: {prob:.1%}")
-            else:
-                print("Stockfish evaluation failed")
-
-    except Exception as e:
-        print(f"Error in main: {str(e)}")
-        raise
+    print("\nEvaluating with Transformer (136M model) under:")
+    transformer_results = evaluate_positions(test_positions[:10], model_size="136M", time_limit=5)
+    print(f"Average loss:{average_loss(transformer_results.values()[:][0], target[:10])}")
 
 
 if __name__ == "__main__":
